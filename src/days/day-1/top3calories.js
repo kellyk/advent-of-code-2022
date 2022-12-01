@@ -1,4 +1,4 @@
-// How many calories are being carried by the Elf carrying the most calories
+// Find the top three Elves carrying the most calories. How many calories are those Elves carrying in total?
 const fs = require('fs');
 
 fs.readFile('data/input.txt', 'utf8', (err, data) => {
