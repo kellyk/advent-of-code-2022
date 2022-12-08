@@ -1,4 +1,4 @@
-// In how many assignment pairs do the ranges overlap??
+// After the rearrangement procedure completes, what crate ends up on top of each stack?
 const fs = require('fs');
 
 fs.readFile('data/input.txt', 'utf8', (err, data) => {
@@ -39,9 +39,9 @@ fs.readFile('data/input.txt', 'utf8', (err, data) => {
 
   // Execute instructions
   instructions.forEach(({ move, from, to }) => {
-    for (let i = 0; i < move; i++) {
-      matrix[to - 1].push(matrix[from - 1].pop());
-    }
+    const startingArr = matrix[from - 1];
+    const itemsToMove = startingArr.splice(startingArr.length - move, move);
+    matrix[to - 1].push(...itemsToMove);
   });
 
   // Return first letter from each column
