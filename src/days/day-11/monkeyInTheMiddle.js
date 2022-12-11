@@ -1,4 +1,4 @@
-// In how many assignment pairs do the ranges overlap??
+// What is the level of monkey business after 20 rounds of stuff-slinging simian shenanigans?
 const fs = require('fs');
 
 function processData(dataArr) {
