@@ -18,29 +18,20 @@ function processData(dataArr) {
 }
 
 function getNewItem(item, { operator, operand }) {
-  let newItem;
   let newOperand = operand === 'old' ? item : parseInt(operand);
-  switch (operator) {
-    case '*': {
-      newItem = item * newOperand;
-      break
-    }
-    case '+': {
-      newItem = item + newOperand;
-      break;
-    }
-  }
-  console.log({newItem, newOperand})
+  const newItem = (operator === '*') ? item * newOperand: item + newOperand;
   return Math.floor(newItem / 3);
 }
 
-fs.readFile('data/sample.txt', 'utf8', (err, data) => {
+fs.readFile('data/input.txt', 'utf8', (err, data) => {
   if (err) {
     console.error(err);
     return;
   }
+
   const dataArr = data.trim().split('\n\n');
   const monkeys = processData(dataArr);
+  const inspectionsPerMonkey = new Array(monkeys.length).fill(0);
 
   // evaluate monkeys after 20 rounds
   for (let i = 0; i < 20; i++) {
@@ -49,20 +40,19 @@ fs.readFile('data/sample.txt', 'utf8', (err, data) => {
 
       for (let j = 0; j < items.length; j++) {
         let item = getNewItem(items[j], operation);
+        inspectionsPerMonkey[i]++
         if (item % test.divisibleBy === 0) {
           monkeys[test.ifYes].items.push(item)
-          console.log(`give ${item} to monkey ${test.ifYes}`)
         } else {
           monkeys[test.ifNo].items.push(item)
-          console.log(`give ${item} to monkey ${test.ifNo}`)
         }
       }
       monkey.items = [];
     })
   }
 
-  console.log('\nMONKEYS!')
-  monkeys.forEach(m => console.log(m));
-  console.log('\n-----!')
-  return 0;
+  const sorted = inspectionsPerMonkey.sort((a, b) => a-b);
+  const total = sorted.pop() * sorted.pop();
+  console.log({total})
+  return total;
 });
