@@ -8,6 +8,7 @@ const MOVES = {
   downRight: { x: 1, y: 1 },
 }
 
+let foo = 0;
 function getNewPositionIfValid(grid, oldPosition, move) {
   let newPosition = { x: oldPosition.x + move.x, y: oldPosition.y + move.y };
   let isValidPosition = false;
@@ -46,6 +47,7 @@ function dropSand(grid, start) {
     return null;
   } else {
     grid[pos.y][pos.x] = 'o';
+    foo++;
     return pos;
   }
 }
@@ -59,7 +61,7 @@ fs.readFile('data/input.txt', 'utf8', (err, data) => {
   let xMin = 500, yMin = 0, xMax = yMax = -1;
 
   // Find x,y ranges since center of data is 500 but we don't want to render that wide
-  const dataArr = data.trim().split('\n').map(pair => pair.split('->').map(i => {
+  const rockCoordinates = data.trim().split('\n').map(pair => pair.split('->').map(i => {
     const [x, y] = i.split(',');
     const coordinate = { x: parseInt(x), y: parseInt(y) };
     xMin = Math.min(coordinate.x, xMin);
@@ -70,8 +72,7 @@ fs.readFile('data/input.txt', 'utf8', (err, data) => {
   }));
 
   // Normalize rock coordinates based on ranges
-  const rockCoordinates = dataArr.map(coords => coords.map(c => ({ x: c.x - xMin, y: c.y - yMin })));
-  const grid = new Array(yMax-yMin).fill('.').map(r => new Array(xMax-xMin).fill('.'))
+  const grid = new Array(yMax).fill('.').map(r => new Array(Math.round(xMax+yMax)).fill('.'))
 
   // Add rocks to grid
   rockCoordinates.forEach(coords => {
@@ -95,7 +96,7 @@ fs.readFile('data/input.txt', 'utf8', (err, data) => {
     }
   })
 
-  const sandStart = { x: 500 - xMin, y: 0 };
+  const sandStart = { x: 500, y: 0 };
   let newPosition, count = 0;
 
   do {
@@ -104,10 +105,11 @@ fs.readFile('data/input.txt', 'utf8', (err, data) => {
   } while (newPosition)
 
   // Print result
-  for (let i = 0; i < grid.length; i++) {
-    console.log(grid[i].join(''))
-  }
+  // for (let i = 0; i < grid.length; i++) {
+  //   console.log(grid[i].join(''))
+  // }
 
-  console.log({count})
+  console.log({count,yMax, xMax, foo})
+  //24287 too high
   return 0;
 });
