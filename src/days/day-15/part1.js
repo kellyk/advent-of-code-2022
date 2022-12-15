@@ -1,41 +1,9 @@
 // Consult the report from the sensors you just deployed.
 // In the row where y=2000000, how many positions cannot contain a beacon?**
-
 const fs = require('fs');
-/*
- {
-  row-1: {
-    col-1: '#',
-    col-2: 'B',
-  }
- }
-*/
 
-function mark(chart, coord, c, xOffset, yOffset) {
-  const x = coord.x + xOffset;
-  const y = coord.y + yOffset;
-  // const str = strArr[y];
-  const rowKey = `row-${y}`;
-  const colKey = `col-${x}`;
-
-  if (!chart[rowKey]) {
-    chart[rowKey] = {}
-  }
-
-  if (!chart[rowKey][colKey]) {
-    chart[rowKey][colKey] = c;
-  }
-}
-
-fs.readFile('data/sample.txt', 'utf8', (err, data) => {
-  if (err) {
-    console.error(err);
-    return;
-  }
-
-
-  let xMin = yMin = Number.MAX_VALUE;
-  let xMax = yMax = 0;
+function processData(data) {
+  let xMin = yMin = Number.MAX_VALUE, xMax = yMax = 0;
 
   const coordinates = data.trim().split('\n').map(item => {
     const sensorStartIdx = 'Sensor at x='.length;
@@ -45,7 +13,11 @@ fs.readFile('data/sample.txt', 'utf8', (err, data) => {
     const [ sensorX, sensorY ] = item.slice(sensorStartIdx, sensorEndIdx).split(', y=');
     const [ beaconX, beaconY ] = item.slice(beaconIdx).split(', y=');
 
+    const deltaX = parseInt(sensorX) - parseInt(beaconX);
+    const deltaY = parseInt(sensorY) - parseInt(beaconY);
+
     const coords = {
+      dist: (Math.abs(deltaX) + Math.abs(deltaY)) + 1,
       beacon: {
         x: parseInt(beaconX),
         y: parseInt(beaconY)
@@ -56,78 +28,76 @@ fs.readFile('data/sample.txt', 'utf8', (err, data) => {
       }
     }
 
-    const delta = Math.abs(coords.sensor.x - coords.beacon.x) + Math.abs(coords.sensor.y - coords.beacon.y);
-    xMin = Math.min(xMin, coords.sensor.x - delta, coords.beacon.x);
-    xMax = Math.max(xMax, coords.sensor.x + delta, coords.beacon.x);
-    yMin = Math.min(yMin, coords.sensor.y - delta, coords.beacon.y);
-    yMax = Math.max(yMax, coords.sensor.y + delta, coords.beacon.y);
-
+    xMin = Math.min(xMin, coords.sensor.x - coords.dist);
+    xMax = Math.max(xMax, coords.sensor.x + coords.dist);
+    yMin = Math.min(yMin, coords.sensor.y - coords.dist);
+    yMax = Math.max(yMax, coords.sensor.y + coords.dist);
     return coords;
   });
 
-  const xOffset = 0 - Math.min(0, xMin);
-  const yOffset = 0 - Math.min(0, yMin);
-  xMax += 1;
-  yMax += 1;
+  return {
+    coordinates,
+    xMax,
+    yMax,
+    xOffset: 0 - Math.min(0, xMin),
+    yOffset: 0 - Math.min(0, yMin)
+  };
+}
+
+function mark(chart, coord, c, xOffset) {
+  const x = coord.x + xOffset;
+  const colKey = `col-${x}`;
+
+  if (!chart[colKey]) {
+    chart[colKey] = c;
+  }
+}
+
+fs.readFile('data/input.txt', 'utf8', (err, data) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+
+  const {  coordinates, xMax, yMax, xOffset, yOffset } = processData(data)
+
   const chart = {};
-  const columns = new Array(yMax + yOffset).fill('.'.repeat(xMax + xOffset));
+  const ROW = 2000000;
+  const start = new Date();
 
   coordinates.forEach((coord, idx) => {
-    const { beacon, sensor } = coord;
+    const { beacon, sensor, dist } = coord;
 
     // Mark sensor and beacon
-    mark(chart, sensor, 'S', xOffset, yOffset);
-    mark(chart, beacon, 'B', xOffset, yOffset);
-
-    const deltaX = sensor.x - beacon.x;
-    const deltaY = sensor.y - beacon.y;
-    const dist = (Math.abs(deltaX) + Math.abs(deltaY));
+    if (sensor.y === ROW) {
+      mark(chart, sensor, 'S', xOffset);
+    } else if (beacon.y === ROW) {
+      mark(chart, beacon, 'B', xOffset);
+    }
 
     // Mark places we know there is no beacon
-    for (let y = sensor.y - dist-1; y < sensor.y + dist+1; y++) {
-      for (let x = sensor.x - dist-1; x < sensor.x + dist+1; x++) {
-        const dx = Math.abs(sensor.x-x)
-        const dy = Math.abs(sensor.y-y);
-        if (dx+dy <= dist) {
-          mark(chart, {x, y}, '#', xOffset, yOffset);
+    for (let y = sensor.y - dist; y < sensor.y + dist; y++) {
+      if (y === ROW) {
+        for (let x = sensor.x - dist; x < sensor.x + dist; x++) {
+          const dx = Math.abs(sensor.x-x)
+          const dy = Math.abs(sensor.y-y);
+          if (dx+dy < dist) {
+            mark(chart, {x, y}, '#', xOffset);
+          }
         }
       }
     }
-  })
+  });
 
-  console.log({xMin, xMax, xOffset, yMin, yMax, yOffset})
-  console.log(chart)
-  // let tenStr = '    '
-  // let digitStr = '    ';
-  // for (let i = 0-xOffset; i < xMax; i++) {
-  //   if (i >= 0) {
-  //     digitStr += i%10
-  //   } else {
-  //     digitStr += ' '
-  //   }
-
-  //   if (i >= 10 ) {
-  //     tenStr += Math.floor( i / 10);
-  //   } else {
-  //     tenStr+=' '
-  //   }
-  // }
-  // console.log(tenStr)
-  // console.log(digitStr)
-  // columns.forEach((col, i) =>{
-  //   console.log(`${i-yOffset}`.padStart(3, ' '), columns[i])
-  // })
-
-  const lookup = `row-${10 + yOffset}`;
-  const row = chart[lookup];
-  console.log('row we care about', row)
-  let count = 0;
-  for (key in row) {
-    if (row[key] === '#') {
-      count++
+  let hashCount = 0;
+  for (key in chart) {
+    if (chart[key] === '#') {
+      hashCount++
     }
   }
-  console.log('# count', count)
 
-  return 0;
+  const end = new Date();
+
+  console.log({hashCount, runtime: (end - start) / 1000 });
+  return hashCount;
 });
