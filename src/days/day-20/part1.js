@@ -10,18 +10,17 @@ fs.readFile('data/input.txt', 'utf8', (err, data) => {
   // We rely on numbers array holding references not values
   let staticNumbers = data.trim().split('\n').map(n => ({ val: parseInt(n) }));
   let numbers = [...staticNumbers];
+  const lastIndex = staticNumbers.length - 1;
 
-  for (let i = 0; i < staticNumbers.length; i++) {
+  for (let i = 0; i <= lastIndex; i++) {
     const current = staticNumbers[i];
     const startingPosition = numbers.indexOf(current);
     let newPosition = startingPosition + current.val;
 
-    if (newPosition < 0) {
-      newPosition = numbers.length - Math.abs(newPosition) - 1;
-    } else if (newPosition === 0) {
-      newPosition = numbers.length - 1;
-    } else if (newPosition >= numbers.length) {
-      newPosition = Math.abs(newPosition - numbers.length) + 1;
+    if (newPosition <= 0) {
+      newPosition = (lastIndex - Math.abs(newPosition)) % numbers.length;
+    } else if (newPosition > lastIndex) {
+      newPosition = (Math.abs(newPosition - lastIndex)) % numbers.length;
     }
 
     // Remove item
@@ -38,10 +37,6 @@ fs.readFile('data/input.txt', 'utf8', (err, data) => {
       index = Math.abs(index - arr.length);
     }
 
-    console.log('zero', arr.indexOf(zero), zero)
-    console.log('val',arr[index].val)
-
-
     return arr[index].val;
   }
 
@@ -49,6 +44,6 @@ fs.readFile('data/input.txt', 'utf8', (err, data) => {
   const second = getValAtPosition(numbers, 2000);
   const third = getValAtPosition(numbers, 3000);
 
-  // console.log(numbers)
-  console.log({ result: first + second + third }); // 5381 too low
+  console.log(numbers)
+  console.log({ result: first + second + third }); // 8764
 });
