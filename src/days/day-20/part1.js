@@ -1,4 +1,5 @@
-// What is the surface area of your scanned lava droplet?
+// Mix your encrypted file exactly once.
+// What is the sum of the three numbers that form the grove coordinates?
 const fs = require('fs');
 
 fs.readFile('data/input.txt', 'utf8', (err, data) => {
@@ -18,9 +19,9 @@ fs.readFile('data/input.txt', 'utf8', (err, data) => {
     let newPosition = startingPosition + current.val;
 
     if (newPosition <= 0) {
-      newPosition = (lastIndex - Math.abs(newPosition)) % numbers.length;
+      newPosition = (lastIndex - Math.abs(newPosition)) % lastIndex;
     } else if (newPosition > lastIndex) {
-      newPosition = (Math.abs(newPosition - lastIndex)) % numbers.length;
+      newPosition = (Math.abs(newPosition - lastIndex)) % lastIndex;
     }
 
     // Remove item
@@ -44,6 +45,5 @@ fs.readFile('data/input.txt', 'utf8', (err, data) => {
   const second = getValAtPosition(numbers, 2000);
   const third = getValAtPosition(numbers, 3000);
 
-  console.log(numbers)
   console.log({ result: first + second + third }); // 8764
 });
