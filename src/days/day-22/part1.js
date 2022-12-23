@@ -159,12 +159,7 @@ fs.readFile('data/input.txt', 'utf8', (err, data) => {
   }
 
   const result = 1000 * (currentPosition.y+1) + 4 * (currentPosition.x + 1) + currentDirection.val;
-  // Draw the grid with the path we took
-  grid.forEach(row => {
-    console.log(row.join(''));
-  })
 
   // Print result
-  console.log({ x: currentPosition.x + 1, y: currentPosition.y + 1, currentDirection, result }); //8442, 120010 and 120358 too low
-  // 196146, 132186, 134176 are wrong, not sure if high or low
+  console.log({ x: currentPosition.x + 1, y: currentPosition.y + 1, currentDirection, result }); // 126350
 });
